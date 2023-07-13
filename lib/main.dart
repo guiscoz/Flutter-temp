@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_temp/components/measurementColumn.dart';
 
 void main() {
   runApp(const MainApp());
 }
 
-final List<String> measurements = ['Celsius', 'Fahrenheit', 'Kelvin'];
+List<String> measurements = ['Celsius', 'Fahrenheit', 'Kelvin'];
 
 class MainApp extends StatelessWidget {
   
@@ -16,111 +17,96 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.grey,
       ),
-      home: TemperatureConverterScreen()
+      home: const TemperatureConverterScreen()
     );
   }
 }
 
 class TemperatureConverterScreen extends StatefulWidget {
+  const TemperatureConverterScreen({super.key});
+
   @override
   ConverterScreenState createState() => ConverterScreenState();
 }
 
 class ConverterScreenState extends State<TemperatureConverterScreen> {
-  String? from_measurement;
-  String? to_measurement;
-  double inputValue = 0;
-  String convert_result = 'The conversion result will be here';
-  TextEditingController temperature_controller = TextEditingController();
+  String? fromMeasurement;
+  String? toMeasurement;
+  String conversionResult = 'Conversion result';
+  TextEditingController temperatureController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flutter Temp'),
+        title: const Text('Flutter Temp', style: TextStyle(color: Colors.white),),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
-              controller: temperature_controller,
+              controller: temperatureController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Temperature',
               ),
+              style: const TextStyle(fontSize: 20),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 64),
             Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('From'),
-                      DropdownButton<String>(
-                        value: from_measurement,
-                        onChanged: (new_value) {
-                          setState(() {
-                            from_measurement = new_value;
-                          });
-                        },
-                        items: measurements.map<DropdownMenuItem<String>>(
-                          (String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          },
-                        ).toList(),
-                      ),
-                    ],
-                  )
+                  child: MeasurementColumn(
+                    label: 'From',
+                    value: fromMeasurement,
+                    measurements: measurements,
+                    onChanged: (newValue) {
+                      setState(() {
+                        fromMeasurement = newValue;
+                      });
+                    },
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Column (
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('To'),
-                      DropdownButton<String>(
-                        value: to_measurement,
-                        onChanged: (newValue) {
-                          setState(() {
-                            to_measurement = newValue;
-                          });
-                        },
-                        items: measurements.map<DropdownMenuItem<String>>(
-                          (String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          },
-                        ).toList(),
-                      ),
-                    ],
+                  child: MeasurementColumn(
+                    label: 'To',
+                    value: toMeasurement,
+                    measurements: measurements,
+                    onChanged: (newValue) {
+                      setState(() {
+                        toMeasurement = newValue;
+                      });
+                    },
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
-                String temperature_value = temperature_controller.text;
-                if (temperature_value.isNotEmpty && from_measurement != null && to_measurement != null && from_measurement != to_measurement) {
-                setState(() {
-                  convert_result = ConvertTemperature(temperature_value, from_measurement, to_measurement);
-                });
-              }
+                String temperatureValue = temperatureController.text;
+                if (temperatureValue.isNotEmpty && fromMeasurement != null && toMeasurement != null && fromMeasurement != toMeasurement) {
+                  setState(() {
+                    conversionResult = convertTemperature(temperatureValue, fromMeasurement, toMeasurement);
+                  });
+                }
               },
-              child: const Text('Convert'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(20),
+              ),
+              child: const Text(
+                'Convert', 
+                style: TextStyle(fontSize: 25, color: Colors.white),
+              ),
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 64),
             Text(
-              convert_result,
-              style: const TextStyle(fontSize: 40),
+              conversionResult,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 30, color: Color.fromARGB(255, 93, 93, 93)),
             )
           ],
         ),
@@ -129,30 +115,30 @@ class ConverterScreenState extends State<TemperatureConverterScreen> {
   }
 }
 
-String ConvertTemperature(String temperature_text, String? unit_from, String? unit_to) {
-  final double temperature_controller = double.tryParse(temperature_text) ?? 0.0;
+String convertTemperature(String temperatureText, String? unitFrom, String? unitTo) {
+  final double temperatureController = double.tryParse(temperatureText) ?? 0.0;
   String abreviation = "";
-  double converted_value = 0.0;
+  double convertedValue = 0.0;
 
-  if (unit_from == 'Celsius' && unit_to == 'Fahrenheit') {
-    converted_value = temperature_controller * 1.8 + 32;
+  if (unitFrom == 'Celsius' && unitTo == 'Fahrenheit') {
+    convertedValue = temperatureController * 1.8 + 32;
     abreviation = 'ºF';
-  } else if (unit_from == 'Celsius' && unit_to == 'Kelvin') {
-    converted_value = temperature_controller + 273;
+  } else if (unitFrom == 'Celsius' && unitTo == 'Kelvin') {
+    convertedValue = temperatureController + 273;
     abreviation = 'K';
-  } else if (unit_from == 'Fahrenheit' && unit_to == 'Celsius') {
-    converted_value = (temperature_controller - 32) / 1.8;
+  } else if (unitFrom == 'Fahrenheit' && unitTo == 'Celsius') {
+    convertedValue = (temperatureController - 32) / 1.8;
     abreviation = 'ºC';
-  } else if (unit_from == 'Fahrenheit' && unit_to == 'Kelvin') {
-    converted_value = (temperature_controller - 32) * 5/9 + 273;
+  } else if (unitFrom == 'Fahrenheit' && unitTo == 'Kelvin') {
+    convertedValue = (temperatureController - 32) * 5/9 + 273;
     abreviation = 'K';
-  } else if (unit_from == 'Kelvin' && unit_to == 'Celsius') {
-    converted_value = temperature_controller - 273;
+  } else if (unitFrom == 'Kelvin' && unitTo == 'Celsius') {
+    convertedValue = temperatureController - 273;
     abreviation = 'ºC';
-  } else if (unit_from == 'Kelvin' && unit_to == 'Fahrenheit') {
-    converted_value = (temperature_controller - 273) * 1.8 + 32;
+  } else if (unitFrom == 'Kelvin' && unitTo == 'Fahrenheit') {
+    convertedValue = (temperatureController - 273) * 1.8 + 32;
     abreviation = 'ºF';
   }
 
-  return '${converted_value.toStringAsFixed(1)} $abreviation';
+  return '${convertedValue.toStringAsFixed(1)} $abreviation';
 }
