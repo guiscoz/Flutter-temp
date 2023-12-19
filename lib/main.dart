@@ -95,6 +95,7 @@ class ConverterScreenState extends State<TemperatureConverterScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
+                primary: Colors.grey,
                 padding: const EdgeInsets.all(20),
               ),
               child: const Text(
